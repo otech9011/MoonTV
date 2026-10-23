@@ -31,14 +31,42 @@ export function getImageProxyUrl(): string | null {
 /**
  * 处理图片 URL，如果设置了图片代理则使用代理
  */
+// export function processImageUrl(originalUrl: string): string {
+//   if (!originalUrl) return originalUrl;
+
+//   const proxyUrl = getImageProxyUrl();
+//   if (!proxyUrl) return originalUrl;
+
+//   return `${proxyUrl}${encodeURIComponent(originalUrl)}`;
+// }
 export function processImageUrl(originalUrl: string): string {
   if (!originalUrl) return originalUrl;
 
+  let hostname: string;
+
+  try {
+    hostname = new URL(originalUrl).hostname.toLowerCase();
+  } catch {
+    // 无法解析的 URL 保持原样
+    return originalUrl;
+  }
+
+  // 仅代理豆瓣图片域名
+  const isDoubanImage = /^img[1-9]\.doubanio\.com$/.test(hostname);
+
+  // 非豆瓣图片不经过代理
+  if (!isDoubanImage) {
+    return originalUrl;
+  }
+
   const proxyUrl = getImageProxyUrl();
+
+  // 未配置代理时直接使用原始地址
   if (!proxyUrl) return originalUrl;
 
   return `${proxyUrl}${encodeURIComponent(originalUrl)}`;
 }
+
 
 /**
  * 获取豆瓣代理 URL 设置
